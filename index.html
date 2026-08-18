@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0d0e15">
+  <title>DUY88DW - Studio Media Suite | Tải Video & Voice AI Engine</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="DUY88DW - Tải video Douyin & Bilibili không logo, studio tạo giọng đọc Tiếng Việt AI 6 giọng truyền cảm chuẩn phòng thu.">
+  
+  <!-- Font Awesome & Matter.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
+  <!-- Inline Manifest for PWA -->
+  <link rel="manifest" href='data:application/manifest+json;utf8,{"name":"DUY88DW Media Suite","short_name":"DUY88DW","start_url":"./","display":"standalone","background_color":"#0c0e17","theme_color":"#ff007f","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3670/3670051.png","sizes":"512x512","type":"image/png"}]}'>
+
+  <style>
+    :root {
+      --primary: #ff007f;
+      --secondary: #00f0ff;
+      --gold: #ffd700;
+      --bg-dark: #08090e;
+      --card-bg: rgba(15, 18, 30, 0.88);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    body, html {
+      width: 100vw; height: 100vh; overflow: hidden;
+      font-family: var(--font-main);
+      background: radial-gradient(circle at 80% 20%, #2b0938 0%, #0c0e17 50%, #05060a 100%);
+      color: #fff; position: relative;
+    }
+    #physics-canvas {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: auto;
+    }
+    .app-container {
+      position: relative; z-index: 10; display: flex; flex-direction: column; height: 100vh; pointer-events: none;
+    }
+    .interactive { pointer-events: auto; }
+
+    /* HEADER */
+    header {
+      padding: 12px 24px; display: flex; justify-content: space-between; align-items: center;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background: rgba(10, 12, 18, 0.75); border-bottom: 1px solid var(--glass-border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: #000; font-weight: 900;
+      box-shadow: 0 0 15px var(--primary);
+    }
+    .brand-title {
+      font-size: 1.35rem; font-weight: 900; letter-spacing: 1px;
+      background: linear-gradient(90deg, var(--gold), var(--primary), var(--secondary));
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-sub { font-size: 0.68rem; color: var(--secondary); letter-spacing: 1.5px; font-weight: 700; display: block; margin-top: -2px; }
+
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-header {
+      background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border);
+      color: #fff; padding: 8px 14px; border-radius: 20px; font-weight: 600; font-size: 0.82rem;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    .btn-header:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+    .btn-header.btn-pwa { background: linear-gradient(135deg, var(--primary), var(--gold)); color: #000; font-weight: 800; border: none; }
+
+    /* MAIN CONTENT & TABS */
+    .main-content {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      padding: 16px 20px; overflow-y: auto;
+    }
+
+    .tab-switcher {
+      display: flex; background: rgba(8, 10, 16, 0.8); padding: 4px; border-radius: 30px;
+      border: 1px solid var(--glass-border); margin-bottom: 16px; gap: 6px;
+    }
+    .tab-btn {
+      padding: 8px 20px; border-radius: 24px; border: none; background: transparent; color: #a0aec0;
+      font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.3s ease;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--primary), #9d4edd); color: #fff;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+    }
+
+    .suite-card {
+      background: var(--card-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border); padding: 24px; border-radius: 24px;
+      max-width: 780px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      position: relative; transition: all 0.3s ease;
+    }
+
+    /* CARD 1: VIDEO DOWNLOADER */
+    .badge-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 16px; }
+    .badge {
+      padding: 5px 14px; border-radius: 16px; font-size: 0.78rem; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 6px; text-transform: uppercase;
+    }
+    .badge-douyin { background: rgba(254, 44, 85, 0.2); border: 1px solid #fe2c55; color: #ff5b79; }
+    .badge-bilibili { background: rgba(0, 161, 214, 0.2); border: 1px solid #00a1d6; color: #23c7ff; }
+
+    .input-box-wrapper {
+      display: flex; background: rgba(8, 10, 16, 0.9); border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px; padding: 6px; transition: all 0.3s ease; margin-bottom: 16px;
+    }
+    .input-box-wrapper:focus-within { border-color: var(--secondary); box-shadow: 0 0 20px rgba(0, 240, 255, 0.3); }
+    .input-box-wrapper input {
+      flex: 1; background: transparent; border: none; outline: none; color: #fff; padding: 10px 14px;
+      font-size: 0.95rem; user-select: text; -webkit-user-select: text;
+    }
+    .btn-paste {
+      background: rgba(255, 255, 255, 0.1); border: none; color: #fff; padding: 8px 12px;
+      border-radius: 12px; cursor: pointer; font-size: 0.8rem; margin-right: 6px; font-weight: 600;
+    }
+    .btn-parse {
+      background: linear-gradient(135deg, var(--primary), #b300ff); color: white; border: none;
+      border-radius: 14px; padding: 10px 22px; font-weight: 800; font-size: 0.9rem; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px; transition: 0.3s;
+    }
+    .btn-parse:hover { transform: scale(1.03); filter: brightness(1.1); }
+
+    #result-panel { display: none; margin-top: 16px; animation: fadeIn 0.4s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-card {
+      background: rgba(255, 255, 255, 0.05); border-radius: 18px; padding: 16px; display: flex; gap: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1); align-items: center; flex-wrap: wrap;
+    }
+    .result-thumb { width: 110px; height: 75px; border-radius: 12px; object-fit: cover; background: #222; }
+    .result-meta { flex: 1; min-width: 200px; }
+    .result-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: #fff; line-height: 1.3; }
+    .result-author { font-size: 0.8rem; color: #a0aec0; margin-bottom: 10px; }
+    .action-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-act {
+      padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 0.8rem; text-decoration: none;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: none; transition: 0.2s;
+    }
+    .btn-download-video { background: linear-gradient(135deg, var(--secondary), #0077ff); color: #000; }
+    .btn-download-audio { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+    .btn-read-title { background: linear-gradient(135deg, var(--gold), var(--primary)); color: #000; }
+
+    /* CARD 2: STUDIO VOICE ENGINE */
+    .section-title {
+      font-size: 1.02rem; font-weight: 800; color: var(--gold); margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .live-status { font-size: 0.75rem; color: var(--secondary); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+
+    .voice-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px; margin-bottom: 16px; max-height: 220px; overflow-y: auto; padding-right: 4px;
+    }
+    .voice-item {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; padding: 12px; cursor: pointer; transition: all 0.25s ease;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .voice-item:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+    .voice-item.active { border-color: var(--secondary); background: rgba(0, 240, 255, 0.15); box-shadow: 0 0 16px rgba(0, 240, 255, 0.35); }
+
+    .voice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .voice-name { font-size: 0.88rem; font-weight: 700; color: #fff; }
+    .voice-gender-tag { font-size: 0.65rem; padding: 2px 6px; border-radius: 6px; font-weight: 800; text-transform: uppercase; }
+    .tag-nam { background: rgba(0, 161, 214, 0.25); color: #23c7ff; border: 1px solid #00a1d6; }
+    .tag-nu { background: rgba(254, 44, 85, 0.25); color: #ff5b79; border: 1px solid #fe2c55; }
+    .voice-desc { font-size: 0.74rem; color: #a0aec0; margin-bottom: 10px; line-height: 1.3; }
+    .voice-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+
+    .btn-preview {
+      background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(255,0,127,0.15));
+      border: 1px solid rgba(0, 240, 255, 0.4); color: #fff; padding: 5px 12px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-preview.playing { background: var(--gold); color: #000; border-color: var(--gold); animation: pulseBtn 1s infinite alternate; }
+    @keyframes pulseBtn { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
+
+    .wave-bars { display: none; align-items: flex-end; gap: 2px; height: 14px; }
+    .wave-bars.active { display: flex; }
+    .wave-bar { width: 3px; height: 100%; background: var(--secondary); border-radius: 2px; animation: bounceWave 0.6s infinite ease-in-out alternate; }
+    .wave-bar:nth-child(2) { animation-delay: 0.2s; height: 60%; }
+    .wave-bar:nth-child(3) { animation-delay: 0.4s; height: 80%; }
+    @keyframes bounceWave { 0% { height: 20%; } 100% { height: 100%; } }
+
+    .text-tools-bar { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .btn-tool {
+      background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--secondary); padding: 5px 12px; border-radius: 10px; font-size: 0.76rem;
+      font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex;
+      align-items: center; gap: 5px;
+    }
+    .btn-tool:hover { background: rgba(0, 240, 255, 0.2); border-color: var(--secondary); transform: translateY(-1px); }
+    .btn-tool:active { transform: translateY(0); }
+
+    textarea {
+      width: 100%; height: 90px; background: rgba(8, 10, 16, 0.9); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px; padding: 12px; color: #fff; font-size: 0.9rem; resize: none; outline: none; user-select: text;
+    }
+    textarea:focus { border-color: var(--secondary); }
+
+    .speed-selector { display: flex; gap: 8px; align-items: center; margin-top: 10px; margin-bottom: 14px; }
+    .speed-label { font-size: 0.8rem; color: #a0aec0; font-weight: 600; }
+    .btn-speed {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff;
+      padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+    }
+    .btn-speed.active { background: var(--secondary); color: #000; border-color: var(--secondary); }
+
+    .pitch-selector { display: flex; gap: 8px; align-items: center; margin-top: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .pitch-label { font-size: 0.8rem; color: #a0aec0; font-weight: 600; }
+    .btn-pitch {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff;
+      padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-pitch:hover { background: rgba(255, 0, 127, 0.2); border-color: var(--primary); }
+    .btn-pitch.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 0 10px rgba(255, 0, 127, 0.4); }
+
+    .progress-container { margin: 12px 0; display: none; }
+    .progress-bar-bg { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.3s; }
+    .progress-text { font-size: 0.75rem; color: var(--secondary); margin-top: 4px; text-align: right; }
+
+    .btn-generate {
+      width: 100%; background: linear-gradient(135deg, var(--primary), #b300ff); color: #fff; border: none;
+      padding: 12px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 8px; font-size: 0.95rem; margin-top: 10px;
+    }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    footer { margin-top: auto; padding: 14px 0; text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+
+  <!-- Matter.js Physics Canvas -->
+  <canvas id="physics-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- HEADER -->
+    <header class="interactive">
+      <a href="#" class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+        <div>
+          <div class="brand-title">DUY88DW</div>
+          <span class="brand-sub">MEDIA & VOICE AI SUITE</span>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <button class="btn-header" id="btn-gravity" onclick="toggleGravity()">
+          <i class="fa-solid fa-atom"></i> <span id="gravity-label">Zero-G Mode</span>
+        </button>
+        <button class="btn-header btn-pwa" id="btn-pwa" onclick="triggerPWAInstall()">
+          <i class="fa-solid fa-download"></i> <span>Cài Đặt App</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN APP CONTENT -->
+    <main class="main-content">
+      <!-- Tab Switcher -->
+      <div class="tab-switcher interactive">
+        <button class="tab-btn active" id="tab-btn-downloader" onclick="switchTab('downloader')">
+          <i class="fa-solid fa-cloud-arrow-down"></i> Tải Video Douyin & Bilibili
+        </button>
+        <button class="tab-btn" id="tab-btn-voice" onclick="switchTab('voice')">
+          <i class="fa-solid fa-microphone-lines"></i> Studio Voice AI (6 Giọng)
+        </button>
+        <button class="tab-btn" id="tab-btn-story" onclick="switchTab('story')">
+          <i class="fa-solid fa-book-open-reader"></i> Viết Truyện Audio AI
+        </button>
+        <button class="tab-btn" id="tab-btn-f5tts" onclick="switchTab('f5tts')">
+          <i class="fa-solid fa-clone"></i> F5-TTS (Nhái Giọng AI)
+        </button>
+      </div>
+
+      <!-- CARD 1: VIDEO DOWNLOADER -->
+      <div class="suite-card interactive" id="tab-downloader">
+        <div class="badge-bar">
+          <span class="badge badge-douyin"><i class="fa-brands fa-tiktok"></i> Douyin Không Logo</span>
+          <span class="badge badge-bilibili"><i class="fa-solid fa-play"></i> Bilibili 1080P Audio/Video</span>
+        </div>
+
+        <div class="input-box-wrapper">
+          <input type="text" id="url-input" placeholder="Dán liên kết video Douyin hoặc Bilibili vào đây..." autocomplete="off">
+          <button class="btn-paste" onclick="pasteClipboard()"><i class="fa-solid fa-paste"></i> Dán</button>
+          <button class="btn-parse" id="btn-parse" onclick="processVideoLink()">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> <span id="parse-text">Phân tích</span>
+          </button>
+        </div>
+
+        <!-- Progress Box cho Tải Video -->
+        <div class="progress-container" id="dl-progress-box" style="display: none; margin: 12px 0 4px 0;">
+          <div class="progress-bar-bg">
+            <div class="progress-fill" id="dl-progress-fill" style="width: 0%;"></div>
+          </div>
+          <div class="progress-text" id="dl-progress-text">Đang kết nối Server phân tích... 0%</div>
+        </div>
+
+        <div id="result-panel">
+          <div class="result-card">
+            <img id="res-thumb" class="result-thumb" src="https://via.placeholder.com/200x140" alt="Thumb">
+            <div class="result-meta">
+              <div id="res-title" class="result-title">Tiêu đề video sẽ hiển thị ở đây...</div>
+              <div id="res-author" class="result-author">Tác giả</div>
+              <div class="action-group">
+                <a id="btn-dl-video" href="#" class="btn-act btn-download-video" target="_blank" download>
+                  <i class="fa-solid fa-download"></i> Tải Video MP4
+                </a>
+                <a id="btn-dl-audio" href="#" class="btn-act btn-download-audio" target="_blank" download style="display:none;">
+                  <i class="fa-solid fa-music"></i> Tải MP3
+                </a>
+                <button id="btn-read-title" class="btn-act btn-read-title" onclick="readTitleWithVoice()">
+                  <i class="fa-solid fa-volume-high"></i> Đọc Tiêu Đề bằng Giọng Đã Chọn
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: STUDIO VOICE ENGINE -->
+      <div class="suite-card interactive" id="tab-voice" style="display: none;">
+        <div class="section-title">
+          <span><i class="fa-solid fa-microphone-lines"></i> 1. Danh Sách Giọng Đọc & Nghe Thử Trực Tiếp</span>
+          <span class="live-status" id="live-indicator"><i class="fa-solid fa-circle-dot"></i> Đã sẵn sàng</span>
+        </div>
+
+        <!-- Voice Grid -->
+        <div class="voice-grid" id="voice-list"></div>
+
+        <div class="section-title">
+          <span><i class="fa-solid fa-pen-nib"></i> 2. Nhập Văn Bản Cần Đọc (Tiếng Việt)</span>
+          <span class="live-status" id="char-count-badge" style="background: rgba(0, 240, 255, 0.15); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.3);">
+            <i class="fa-solid fa-font"></i> <strong id="char-count">0</strong> ký tự | <strong id="word-count">0</strong> từ
+          </span>
+        </div>
+
+        <div class="text-tools-bar">
+          <button type="button" class="btn-tool" onclick="cleanText('all')" title="Xóa ký tự đặc biệt & xóa cách dòng thừa">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Chuẩn Hóa Tất Cả
+          </button>
+          <button type="button" class="btn-tool" onclick="cleanText('newlines')" title="Xóa các ký tự xuống dòng, gộp thành 1 đoạn">
+            <i class="fa-solid fa-align-left"></i> Xóa Cách Dòng
+          </button>
+          <button type="button" class="btn-tool" onclick="cleanText('special')" title="Lọc bỏ icon và ký tự đặc biệt">
+            <i class="fa-solid fa-broom"></i> Xóa Ký Tự Đặc Biệt
+          </button>
+        </div>
+
+        <textarea id="tts-text" placeholder="Nhập văn bản bạn muốn DUY88DW tổng hợp giọng đọc chuẩn studio..." oninput="updateCharCount()"></textarea>
+
+        <div class="speed-selector">
+          <span class="speed-label">Tốc độ đọc:</span>
+          <button class="btn-speed" onclick="setSpeed(0.8, this)">0.8x</button>
+          <button class="btn-speed active" onclick="setSpeed(1.0, this)">1.0x (Chuẩn)</button>
+          <button class="btn-speed" onclick="setSpeed(1.25, this)">1.25x</button>
+          <button class="btn-speed" onclick="setSpeed(1.5, this)">1.5x</button>
+        </div>
+
+        <div class="pitch-selector">
+          <span class="pitch-label">Cao độ giọng (Pitch):</span>
+          <button class="btn-pitch" onclick="setPitch(-5, this)">-5Hz (Trầm)</button>
+          <button class="btn-pitch" onclick="setPitch(-2, this)">-2Hz</button>
+          <button class="btn-pitch active" onclick="setPitch(0, this)">0Hz (Chuẩn)</button>
+          <button class="btn-pitch" onclick="setPitch(2, this)">+2Hz</button>
+          <button class="btn-pitch" onclick="setPitch(5, this)">+5Hz (Bổng)</button>
+        </div>
+
+        <!-- Progress Box -->
+        <div class="progress-container" id="progress-box">
+          <div class="progress-bar-bg">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="progress-text" id="progress-text">Đang kết nối Server... 0%</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 14px;">
+          <button class="btn-generate" id="btn-submit" onclick="generateVoiceStream()" style="flex: 1;">
+            <i class="fa-solid fa-play"></i> Nghe Trực Tiếp HD
+          </button>
+          <button class="btn-generate" id="btn-download-voice" onclick="downloadVoiceAudio()" style="flex: 1; background: linear-gradient(135deg, #00ff87, #00f0ff); color: #000;">
+            <i class="fa-solid fa-download"></i> Tải File MP3
+          </button>
+        </div>
+
+        <audio id="main-audio-player" controls style="width: 100%; margin-top: 14px; border-radius: 12px; display: none; accent-color: #ff007f; background: rgba(0,0,0,0.5);"></audio>
+      </div>
+
+      <!-- CARD 3: MASTER AUDIO STORY AI ENGINE -->
+      <div class="suite-card interactive" id="tab-story" style="display: none;">
+        <div class="section-title">
+          <span><i class="fa-solid fa-book-open-reader"></i> Master Audio Story AI Engine - Sáng Tác Truyện Audio Chuyên Nghiệp</span>
+          <span class="live-status" style="background: rgba(0, 240, 255, 0.15); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.3);">
+            <i class="fa-solid fa-bolt"></i> Cấu trúc 6 Giai Đoạn + Chèn Thẻ TTS
+          </span>
+        </div>
+
+        <!-- 1. THỂ LOẠI (15 GENRES) -->
+        <div class="section-title" style="font-size: 0.9rem; margin-top: 10px;">
+          <span><i class="fa-solid fa-layer-group"></i> 1. Chọn Thể Loại Truyện (15 Thể Loại Audio):</span>
+        </div>
+
+        <div class="genre-selector-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 8px; margin-bottom: 14px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+          <button type="button" class="btn-tool active" id="genre-btn-hoc_duong" onclick="selectStoryGenre('hoc_duong')" style="padding: 8px; text-align: left; background: rgba(0, 255, 135, 0.15); border-color: #00ff87;">
+            <i class="fa-solid fa-graduation-cap" style="color: #00ff87;"></i> <strong>Học Đường</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-tong_tai" onclick="selectStoryGenre('tong_tai')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-user-tie" style="color: #00f0ff;"></i> <strong>Tổng Tài Bá Đạo</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-ngon_tinh" onclick="selectStoryGenre('ngon_tinh')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-heart" style="color: #ff70a6;"></i> <strong>Ngôn Tình</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-drama" onclick="selectStoryGenre('drama')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-masks-theater" style="color: #ffd700;"></i> <strong>Drama & Đấu Trí</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-tra_thu" onclick="selectStoryGenre('tra_thu')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-fire-flame-curved" style="color: #ff4d4d;"></i> <strong>Trả Thù Sảng Văn</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-hao_mon" onclick="selectStoryGenre('hao_mon')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-gem" style="color: #00f0ff;"></i> <strong>Hào Môn Thế Gia</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-trong_sinh" onclick="selectStoryGenre('trong_sinh')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-rotate-left" style="color: #00ff87;"></i> <strong>Trọng Sinh</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-nu_cuong" onclick="selectStoryGenre('nu_cuong')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-crown" style="color: #ffd700;"></i> <strong>Nữ Cường</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-co_trang" onclick="selectStoryGenre('co_trang')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-fan" style="color: #ff8c00;"></i> <strong>Cổ Trang Cung Đấu</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-xuyen_khong" onclick="selectStoryGenre('xuyen_khong')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-door-open" style="color: #a060ff;"></i> <strong>Xuyên Không</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-linh_di" onclick="selectStoryGenre('linh_di')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-ghost" style="color: #ff007f;"></i> <strong>Linh Dị Dân Gian</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-kinh_di" onclick="selectStoryGenre('kinh_di')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-skull" style="color: #ff4d4d;"></i> <strong>Kinh Dị</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-bi_an" onclick="selectStoryGenre('bi_an')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-moon" style="color: #00f0ff;"></i> <strong>Bí Ẩn Đêm Tối</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-dieu_tra" onclick="selectStoryGenre('dieu_tra')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-magnifying-glass" style="color: #00ff87;"></i> <strong>Trinh Thám Điều Tra</strong>
+          </button>
+          <button type="button" class="btn-tool" id="genre-btn-huyen_huan" onclick="selectStoryGenre('huyen_huan')" style="padding: 8px; text-align: left;">
+            <i class="fa-solid fa-dragon" style="color: #ffd700;"></i> <strong>Huyền Huyễn Tu Tiên</strong>
+          </button>
+        </div>
+
+        <!-- 2. GIỌNG TRUYỆN / TONE & KẾT TRUYỆN -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+          <div>
+            <div class="section-title" style="font-size: 0.85rem;">
+              <span><i class="fa-solid fa-wand-magic-sparkles"></i> 2. Giọng Truyện / Tone:</span>
+            </div>
+            <select id="story-tone-select" style="width:100%; padding:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(0,240,255,0.3); color:#fff; border-radius:8px;">
+              <option value="cang_thang">⚡ Căng Thẳng / Hồi Hộp</option>
+              <option value="ngot_ngao">💖 Ngọt Ngào / Lãng Mạn</option>
+              <option value="bi_thuong">🌧️ Bi Thương / U Sầu</option>
+              <option value="kich_tinh">🔥 Kịch Tính / Sảng Khoái</option>
+              <option value="hai_huoc">😄 Hài Hước / Dí Dỏm</option>
+              <option value="bi_an">🔮 Bí Ẩn / Ma Mị</option>
+              <option value="u_am">🦇 U Ám / Lạnh Lẽo</option>
+            </select>
+          </div>
+          <div>
+            <div class="section-title" style="font-size: 0.85rem;">
+              <span><i class="fa-solid fa-flag-checkered"></i> 3. Kiểu Kết Truyện:</span>
+            </div>
+            <select id="story-ending-select" style="width:100%; padding:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,215,0,0.3); color:#fff; border-radius:8px;">
+              <option value="HE">✨ HE - Happy Ending (Viên Mãn)</option>
+              <option value="SE">💔 SE - Sad Ending (Bi Thương)</option>
+              <option value="OE">🌌 OE - Open Ending (Kết Mở)</option>
+              <option value="TWIST">🌪️ Plot Twist (Bẻ Lái Bất Ngờ)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- AI ENGINE CONNECTION (Gemini AI & ChatGPT) -->
+        <div style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); padding: 12px; border-radius: 12px; margin-bottom: 14px;">
+          <div class="section-title" style="font-size: 0.85rem; margin-bottom: 8px;">
+            <span><i class="fa-solid fa-brain" style="color: #00ff87;"></i> Liên Kết Động Cơ AI Cao Cấp (Google Gemini & OpenAI ChatGPT):</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px;">
+            <div>
+              <label style="font-size: 0.75rem; color: #a0aec0;">Động Cơ AI Sáng Tác:</label>
+              <select id="story-ai-engine-select" style="width:100%; padding:6px; background:rgba(0,0,0,0.6); border:1px solid rgba(0,240,255,0.3); color:#fff; border-radius:8px;" onchange="toggleAiApiKeyInput(this.value)">
+                <option value="builtin">⚡ AI Nội Bộ (Không cần API Key)</option>
+                <option value="gemini">🌟 Google Gemini AI (Rất Cảm Xúc & Kịch Tính)</option>
+                <option value="chatgpt">🤖 OpenAI ChatGPT (GPT-4o Mini / GPT-4o)</option>
+              </select>
+            </div>
+            <div id="ai-key-box" style="display: none;">
+              <label style="font-size: 0.75rem; color: #a0aec0;">API Key (Gemini / OpenAI):</label>
+              <input type="password" id="story-ai-key-input" placeholder="Dán API Key vào đây..." style="width:100%; padding:6px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,215,0,0.3); color:#fff; border-radius:8px;" onchange="saveApiKeyLocal(this.value)">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. CẤU HÌNH ĐỘ DÀI KÝ TỰ (1,000 - 1,000,000 KÝ TỰ) -->
+        <div class="section-title" style="font-size: 0.9rem; margin-top: 10px;">
+          <span><i class="fa-solid fa-sliders"></i> 4. Điều Chỉnh Số Ký Tự Cần Viết (Từ 1,000 đến 1,000,000 Ký Tự):</span>
+          <span class="live-status" style="background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3);">
+            Mục tiêu: <strong id="story-target-chars-label">3,000</strong> ký tự
+          </span>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <input type="range" id="story-chars-slider" min="1000" max="1000000" step="1000" value="3000" style="width: 100%; accent-color: #00f0ff;" oninput="updateStoryCharsSlider(this.value)">
+          
+          <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn-tool" onclick="setStoryCharsPreset(1000)">1,000 Ký Tự</button>
+            <button type="button" class="btn-tool" onclick="setStoryCharsPreset(3000)">3,000 Ký Tự</button>
+            <button type="button" class="btn-tool" onclick="setStoryCharsPreset(5000)">5,000 Ký Tự</button>
+            <button type="button" class="btn-tool" onclick="setStoryCharsPreset(10000)">10,000 Ký Tự</button>
+            <button type="button" class="btn-tool" onclick="setStoryCharsPreset(50000)">50,000 Ký Tự</button>
+            <button type="button" class="btn-tool" onclick="setStoryCharsPreset(100000)">100,000 Ký Tự</button>
+            <button type="button" class="btn-tool" onclick="setStoryCharsPreset(1000000)">1,000,000 Ký Tự (Max)</button>
+          </div>
+        </div>
+
+        <input type="text" id="story-custom-prompt" placeholder="Nhập tên nhân vật chính hoặc ý tưởng cốt truyện mong muốn (để trống nếu muốn AI tự sáng tạo)..." style="width:100%; padding:10px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:10px; margin-bottom:14px;">
+
+        <!-- Progress Box Story -->
+        <div class="progress-container" id="story-progress-box" style="display: none; margin: 12px 0;">
+          <div class="progress-bar-bg">
+            <div class="progress-fill" id="story-progress-fill" style="width: 0%;"></div>
+          </div>
+          <div class="progress-text" id="story-progress-text">Đang khởi tạo bối cảnh và cốt truyện AI... 0%</div>
+        </div>
+
+        <button class="btn-generate" id="btn-run-story" onclick="generateMasterAIStory()" style="background: linear-gradient(135deg, #00ff87, #00f0ff); color: #000; font-weight: bold; margin-bottom: 14px;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Sáng Tác Truyện Audio AI Ngay
+        </button>
+
+        <div class="section-title" style="font-size: 0.9rem;">
+          <span><i class="fa-solid fa-scroll"></i> Kịch Bản Truyện Audio Đã Viết (Văn Xuôi Thuần Túy):</span>
+          <span class="live-status" style="background: rgba(0, 240, 255, 0.15); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.3);">
+            <i class="fa-solid fa-font"></i> <strong id="story-out-char-count">0</strong> ký tự | <strong id="story-out-word-count">0</strong> từ
+          </span>
+        </div>
+
+        <textarea id="story-result-text" placeholder="Nội dung truyện audio do AI sáng tác sẽ xuất hiện tại đây..." style="min-height: 220px;" oninput="updateStoryOutCounts()"></textarea>
+
+        <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+          <button class="btn-generate" id="btn-copy-story" type="button" onclick="copyStoryScript()" style="flex: 1; min-width: 160px; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; font-weight: bold;">
+            <i class="fa-solid fa-copy"></i> Sao Chép Văn Bản Truyện
+          </button>
+          <button class="btn-generate" type="button" onclick="sendStoryToStudioTTS()" style="flex: 1; min-width: 160px; background: linear-gradient(135deg, #00ff87, #00f0ff); color: #000;">
+            <i class="fa-solid fa-headset"></i> Chuyển Đọc Studio Voice AI
+          </button>
+          <button class="btn-generate" type="button" onclick="sendStoryToF5TTS()" style="flex: 1; min-width: 160px; background: linear-gradient(135deg, #00f0ff, #7000ff); color: #fff;">
+            <i class="fa-solid fa-clone"></i> Chuyển Đọc F5-TTS Nhái Giọng
+          </button>
+        </div>
+      </div>
+
+      <!-- CARD 4: F5-TTS ZERO-SHOT VOICE CLONING -->
+      <div class="suite-card interactive" id="tab-f5tts" style="display: none;">
+        <div class="section-title">
+          <span><i class="fa-solid fa-clone"></i> F5-TTS AI - Nhái Giọng Nói Zero-Shot Từ Mẫu Âm Thanh</span>
+          <span class="live-status" id="f5-hardware-status"><i class="fa-solid fa-microchip"></i> Đang kiểm tra Phần cứng AI...</span>
+        </div>
+
+        <div class="section-title" style="font-size: 0.9rem; margin-top: 10px;">
+          <span><i class="fa-solid fa-file-audio"></i> 1. Tệp Mẫu Giọng Nói Cần Nhái (Sample Audio WAV/MP3 3 - 10 Giây):</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center; flex-wrap: wrap;">
+          <input type="file" id="f5-upload-input" accept="audio/*" style="display: none;" onchange="handleF5AudioUpload(this)">
+          <button class="btn-paste" type="button" onclick="document.getElementById('f5-upload-input').click()" style="background: linear-gradient(135deg, #00f0ff, #00ff87); color: #000; font-weight: bold; padding: 10px 18px; border-radius: 8px;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Tải Lên Tệp Âm Thanh (.mp3, .wav)
+          </button>
+          <button class="btn-paste" type="button" onclick="useDefaultSample()"><i class="fa-solid fa-music"></i> Dùng Mẫu Mặc Định</button>
+          <span id="f5-upload-status" style="font-size: 0.85rem; color: #00f0ff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">mau_giong_chuyen_nghiep.mp3</span>
+        </div>
+
+        <div class="input-box-wrapper" style="margin-bottom: 14px;">
+          <input type="text" id="f5-ref-audio" placeholder="Đường dẫn tệp âm thanh mẫu hoặc upload..." value="mau_giong_chuyen_nghiep.mp3" autocomplete="off">
+        </div>
+
+        <div class="section-title" style="font-size: 0.9rem; margin-top: 10px;">
+          <span><i class="fa-solid fa-quote-left"></i> 2. Lời Văn Của Mẫu Âm Thanh (Reference Script):</span>
+          <button class="btn-paste" type="button" onclick="autoTranscribeSample()" style="background: rgba(0, 240, 255, 0.15); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.3); font-size: 0.8rem; padding: 4px 10px;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Tự Động Trích Xuất Lời Văn AI
+          </button>
+        </div>
+
+        <input type="text" id="f5-ref-text" placeholder="Bấm 'Tự Động Trích Xuất Lời Văn AI' hoặc tự nhập lời văn mẫu..." style="width:100%; padding:10px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:10px; margin-bottom:14px;">
+
+        <div class="section-title" style="font-size: 0.9rem; margin-top: 10px;">
+          <span><i class="fa-solid fa-pen-fancy"></i> 3. Văn Bản Mục Tiêu Cần AI Đọc Nhái Giọng:</span>
+          <span class="live-status" style="background: rgba(0, 240, 255, 0.15); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.3);">
+            <i class="fa-solid fa-font"></i> <strong id="f5-char-count">0</strong> ký tự
+          </span>
+        </div>
+
+        <textarea id="f5-gen-text" placeholder="Nhập nội dung bất kỳ bạn muốn AI đọc nhái theo giọng mẫu trên..." oninput="updateF5CharCount()"></textarea>
+
+        <!-- Progress Box F5-TTS -->
+        <div class="progress-container" id="f5-progress-box" style="display: none; margin: 12px 0;">
+          <div class="progress-bar-bg">
+            <div class="progress-fill" id="f5-progress-fill" style="width: 0%;"></div>
+          </div>
+          <div class="progress-text" id="f5-progress-text">Khởi tạo mô hình F5-TTS Diffusion Flow Matching... 0%</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+          <button class="btn-generate" id="btn-run-f5tts" onclick="runF5TTSClone()" style="flex: 2; min-width: 200px; background: linear-gradient(135deg, #00f0ff, #7000ff); color: #fff;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Tạo Nhái Giọng F5-TTS AI
+          </button>
+          <button class="btn-generate" id="btn-download-f5-mp3" onclick="downloadF5Audio('mp3')" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #00ff87, #00f0ff); color: #000; display: none;">
+            <i class="fa-solid fa-file-audio"></i> Tải File MP3 HD
+          </button>
+          <button class="btn-generate" id="btn-download-f5-wav" onclick="downloadF5Audio('wav')" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #ffd700, #ff007f); color: #000; display: none;">
+            <i class="fa-solid fa-download"></i> Tải File WAV Gốc
+          </button>
+        </div>
+
+        <audio id="f5-result-player" controls style="width: 100%; margin-top: 14px; border-radius: 12px; display: none; accent-color: #00f0ff; background: rgba(0,0,0,0.5);"></audio>
+      </div>
+    </main>
+
+    <footer class="interactive">
+      DUY88DW Media & Voice Suite &copy; 2026 • Powered by Matter.js & Edge-TTS Backend
+    </footer>
+  </div>
+
+  <script>
+    /* ==========================================================
+       1. ANTIGRAVITY PHYSICS ENGINE (Matter.js)
+       ========================================================== */
+    const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Body } = Matter;
+    const engine = Engine.create();
+    const world = engine.world;
+    world.gravity.x = 0; world.gravity.y = 0; // Zero gravity by default
+
+    const canvas = document.getElementById('physics-canvas');
+    const render = Render.create({
+      canvas: canvas, engine: engine,
+      options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
+    });
+    Render.run(render);
+    Runner.run(Runner.create(), engine);
+
+    let walls = [];
+    function setupWalls() {
+      Composite.remove(world, walls);
+      const w = window.innerWidth, h = window.innerHeight, t = 100;
+      walls = [
+        Bodies.rectangle(w/2, -t/2, w+200, t, { isStatic: true }),
+        Bodies.rectangle(w/2, h+t/2, w+200, t, { isStatic: true }),
+        Bodies.rectangle(-t/2, h/2, t, h+200, { isStatic: true }),
+        Bodies.rectangle(w+t/2, h/2, t, h+200, { isStatic: true })
+      ];
+      Composite.add(world, walls);
+    }
+    setupWalls();
+    window.addEventListener('resize', () => {
+      render.canvas.width = window.innerWidth; render.canvas.height = window.innerHeight; setupWalls();
+    });
+
+    const colors = ['#ff007f', '#00f0ff', '#ffd700', '#9d4edd', '#00ff87'];
+    for (let i = 0; i < 14; i++) {
+      const orb = Bodies.circle(Math.random()*window.innerWidth, Math.random()*window.innerHeight, Math.random()*25+15, {
+        restitution: 0.9, frictionAir: 0.015,
+        render: { fillStyle: colors[i % colors.length], strokeStyle: '#ffffff', lineWidth: 1.5 }
+      });
+      Body.setVelocity(orb, { x: (Math.random()-0.5)*4, y: (Math.random()-0.5)*4 });
+      Composite.add(world, orb);
+    }
+
+    const mouse = Mouse.create(render.canvas);
+    const mouseConstraint = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.2, render: { visible: false } } });
+    Composite.add(world, mouseConstraint);
+
+    let zeroG = true;
+    function toggleGravity() {
+      zeroG = !zeroG;
+      world.gravity.y = zeroG ? 0 : 0.85;
+      document.getElementById('gravity-label').innerText = zeroG ? 'Zero-G Mode' : 'Trọng Lực: Bật';
+    }
+
+    /* ==========================================================
+       2. TAB SWITCHER & API CONFIG
+       ========================================================== */
+    const API_BASE = window.location.origin.includes("http") ? window.location.origin : "http://127.0.0.1:8000";
+
+    function switchTab(tabName) {
+      document.getElementById('tab-downloader').style.display = tabName === 'downloader' ? 'block' : 'none';
+      document.getElementById('tab-voice').style.display = tabName === 'voice' ? 'block' : 'none';
+      document.getElementById('tab-story').style.display = tabName === 'story' ? 'block' : 'none';
+      document.getElementById('tab-f5tts').style.display = tabName === 'f5tts' ? 'block' : 'none';
+
+      document.getElementById('tab-btn-downloader').classList.toggle('active', tabName === 'downloader');
+      document.getElementById('tab-btn-voice').classList.toggle('active', tabName === 'voice');
+      document.getElementById('tab-btn-story').classList.toggle('active', tabName === 'story');
+      document.getElementById('tab-btn-f5tts').classList.toggle('active', tabName === 'f5tts');
+
+      if (tabName === 'f5tts') {
+        checkF5TTSHardware();
+      }
+    }
+
+    /* ==========================================================
+       3. VIDEO DOWNLOADER (Douyin & Bilibili)
+       ========================================================== */
+    async function pasteClipboard() {
+      try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('url-input').value = text;
+      } catch (err) {
+        alert('Vui lòng dán thủ công bằng Ctrl+V!');
+      }
+    }
+
+    function getFullUrl(path) {
+      if (!path) return '#';
+      if (path.startsWith('http://') || path.startsWith('https://')) return path;
+      return `${API_BASE}${path.startsWith('/') ? '' : '/'}${path}`;
+    }
+
+    let lastParsedTitle = "";
+
+    async function processVideoLink() {
+      const url = document.getElementById('url-input').value.trim();
+      if (!url) {
+        alert('Vui lòng nhập liên kết video Douyin hoặc Bilibili!');
+        return;
+      }
+
+      const btnParse = document.getElementById('btn-parse');
+      const parseText = document.getElementById('parse-text');
+      const dlProgressBox = document.getElementById('dl-progress-box');
+      const dlProgressFill = document.getElementById('dl-progress-fill');
+      const dlProgressText = document.getElementById('dl-progress-text');
+
+      btnParse.disabled = true; parseText.innerText = "Đang xử lý...";
+      dlProgressBox.style.display = 'block';
+      dlProgressFill.style.background = 'linear-gradient(90deg, var(--primary), var(--secondary))';
+      dlProgressFill.style.width = '15%';
+      dlProgressText.innerText = 'Đang gửi liên kết tới Server... 15%';
+
+      let curProgress = 15;
+      const progressInterval = setInterval(() => {
+        if (curProgress < 85) {
+          curProgress += Math.max(1, Math.round((85 - curProgress) * 0.15));
+          dlProgressFill.style.width = curProgress + '%';
+          dlProgressText.innerText = `Đang phân tích & bóc tách phương tiện không logo... ${curProgress}%`;
+        }
+      }, 250);
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        });
+        const data = await resp.json();
+        if (!resp.ok || data.status !== 'success') throw new Error(data.detail || 'Không thể phân tích video');
+
+        clearInterval(progressInterval);
+        dlProgressFill.style.width = '100%';
+        dlProgressFill.style.background = 'linear-gradient(90deg, #00ff87, #00f0ff)';
+        dlProgressText.innerText = '✅ Phân tích video thành công! 100%';
+
+        document.getElementById('res-thumb').src = data.cover || 'https://via.placeholder.com/200';
+        document.getElementById('res-title').innerText = data.title;
+        document.getElementById('res-author').innerText = `👤 ${data.author} ${data.duration ? '⏱️ '+data.duration+'s' : ''}`;
+        
+        lastParsedTitle = data.title;
+        document.getElementById('tts-text').value = data.title; // Auto sync to voice generator
+        updateCharCount();
+
+        const videoTarget = data.proxy_video_url || data.video_url;
+        const fullVideoUrl = getFullUrl(videoTarget);
+        document.getElementById('btn-dl-video').href = fullVideoUrl;
+        lastDownloadedVideoUrl = fullVideoUrl;
+        
+        const inpaintInput = document.getElementById("inpaint-url-input");
+        if (inpaintInput) inpaintInput.value = fullVideoUrl;
+        
+        const btnAudio = document.getElementById('btn-dl-audio');
+        const audioTarget = data.proxy_audio_url || data.audio_url;
+        if (audioTarget) {
+          btnAudio.href = getFullUrl(audioTarget);
+          btnAudio.style.display = 'inline-flex';
+        } else {
+          btnAudio.style.display = 'none';
+        }
+
+        document.getElementById('result-panel').style.display = 'block';
+      } catch (err) {
+        clearInterval(progressInterval);
+        dlProgressFill.style.width = '100%';
+        dlProgressFill.style.background = '#ff4d4d';
+        dlProgressText.innerText = '❌ Phân tích thất bại!';
+        
+        if (err.name === 'TypeError' && (err.message.includes('fetch') || err.message.includes('Failed'))) {
+          alert('❌ Không thể kết nối Server backend!\nVui lòng kiểm tra đảm bảo file server.py đang chạy tại: ' + API_BASE);
+        } else {
+          alert('❌ Lỗi phân tích video: ' + err.message);
+        }
+      } finally {
+        btnParse.disabled = false; parseText.innerText = "Phân tích";
+        setTimeout(() => {
+          if (dlProgressFill.style.background !== 'rgb(255, 77, 77)') {
+            dlProgressBox.style.display = 'none';
+          }
+        }, 3500);
+      }
+    }
+
+    /* ==========================================================
+       4. STUDIO VOICE AI ENGINE & DIRECT PREVIEW
+       ========================================================== */
+    const VOICES = [
+      { id: "review_phim_nam", name: "Nam - Review Phim", gender: "nam", style: "Kịch tính, Cuốn hút, Trầm ấm" },
+      { id: "thoi_su_tech_nam", name: "Nam - Thời Sự & Tech", gender: "nam", style: "Trang trọng, Tin tức, Rõ chữ" },
+      { id: "podcast_tam_su_nu", name: "Nữ - Podcast Tâm Sự", gender: "nu", style: "Sâu lắng, Ấm áp, Nhẹ nhàng" },
+      { id: "quang_cao_trend_nu", name: "Nữ - Quảng Cáo TikTok", gender: "nu", style: "Năng động, Tươi vui, Bắt trend" },
+      { id: "sach_noi_nu", name: "Nữ - Sách Nói Đêm", gender: "nu", style: "Du dương, Truyền cảm, Ru ngủ" },
+      { id: "thuyet_minh_khoa_hoc_nam", name: "Nam - Thuyết Minh", gender: "nam", style: "Khoa học, Tài liệu, Điềm tĩnh" }
+    ];
+
+    let selectedVoice = VOICES[0].id;
+    let selectedSpeed = 1.0;
+    let selectedPitch = 0;
+    const previewPlayer = new Audio();
+    let currentPlayingVoiceId = null;
+
+    const voiceListEl = document.getElementById("voice-list");
+    
+    function renderVoiceCards() {
+      voiceListEl.innerHTML = "";
+      VOICES.forEach((v) => {
+        const item = document.createElement("div");
+        item.className = `voice-item ${v.id === selectedVoice ? 'active' : ''}`;
+        item.id = `card-${v.id}`;
+        item.onclick = () => selectVoice(v.id);
+
+        const isPlaying = currentPlayingVoiceId === v.id;
+
+        item.innerHTML = `
+          <div class="voice-header">
+            <div class="voice-name">${v.name}</div>
+            <span class="voice-gender-tag tag-${v.gender}">${v.gender.toUpperCase()}</span>
+          </div>
+          <div class="voice-desc">${v.style}</div>
+          <div class="voice-footer">
+            <button class="btn-preview ${isPlaying ? 'playing' : ''}" onclick="event.stopPropagation(); togglePreviewVoice('${v.id}')">
+              <i class="fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}"></i> 
+              <span>${isPlaying ? 'Dừng' : 'Nghe Thử'}</span>
+            </button>
+            <div class="wave-bars ${isPlaying ? 'active' : ''}">
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+            </div>
+          </div>
+        `;
+        voiceListEl.appendChild(item);
+      });
+    }
+
+    function selectVoice(id) {
+      selectedVoice = id;
+      renderVoiceCards();
+    }
+
+    function setSpeed(speed, btnEl) {
+      selectedSpeed = speed;
+      document.querySelectorAll('.btn-speed').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+    }
+
+    function setPitch(pitch, btnEl) {
+      selectedPitch = pitch;
+      document.querySelectorAll('.btn-pitch').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+    }
+
+    /* ==========================================================
+       SAFE AUDIO PLAYBACK (Bắt lỗi Interrupted play request)
+       ========================================================== */
+    function safePlay(audioElement, newSrc, onError) {
+      try {
+        audioElement.pause();
+        audioElement.currentTime = 0;
+        audioElement.src = newSrc;
+        
+        const playPromise = audioElement.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            // Bỏ qua lỗi tự nhiên AbortError/Interrupted khi nạp track mới liên tục
+            if (err.name === 'AbortError' || (err.message && err.message.includes('interrupted'))) {
+              return;
+            }
+            if (onError) onError(err);
+          });
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError' && (!err.message || !err.message.includes('interrupted'))) {
+          if (onError) onError(err);
+        }
+      }
+    }
+
+    /* ==========================================================
+       CHUẨN HÓA VĂN BẢN (Xóa ký tự đặc biệt & Xóa cách dòng)
+       ========================================================== */
+    function cleanText(mode) {
+      const textarea = document.getElementById("tts-text");
+      let text = textarea.value;
+      if (!text) return;
+
+      if (mode === 'newlines' || mode === 'all') {
+        // Xóa xuống dòng, thay bằng 1 khoảng trắng
+        text = text.replace(/[\r\n]+/g, ' ');
+      }
+
+      if (mode === 'special' || mode === 'all') {
+        // Giữ chữ Tiếng Việt & Quốc tế, số, khoảng trắng và dấu câu thông dụng (. , ? ! : - % " ')
+        text = text.replace(/[^\p{L}\p{N}\s.,?!:\-"'()%–-]/gu, '');
+      }
+
+      // Gộp nhiều khoảng trắng liên tiếp thành 1 khoảng trắng single space
+      text = text.replace(/\s+/g, ' ').trim();
+      textarea.value = text;
+      updateCharCount();
+    }
+
+    function updateCharCount() {
+      const textarea = document.getElementById('tts-text');
+      if (!textarea) return;
+      const text = textarea.value || '';
+      const charCount = text.length;
+      const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+
+      const charEl = document.getElementById('char-count');
+      const wordEl = document.getElementById('word-count');
+      if (charEl) charEl.innerText = charCount.toLocaleString();
+      if (wordEl) wordEl.innerText = wordCount.toLocaleString();
+    }
+
+    // Run on initial load
+    document.addEventListener('DOMContentLoaded', updateCharCount);
+
+    function togglePreviewVoice(voiceId) {
+      const liveIndicator = document.getElementById("live-indicator");
+      if (currentPlayingVoiceId === voiceId && !previewPlayer.paused) {
+        previewPlayer.pause(); currentPlayingVoiceId = null;
+        liveIndicator.innerHTML = `<i class="fa-solid fa-circle-dot"></i> Đã sẵn sàng`;
+        renderVoiceCards(); return;
+      }
+
+      selectVoice(voiceId);
+      currentPlayingVoiceId = voiceId;
+      liveIndicator.innerHTML = `<i class="fa-solid fa-waveform-lines" style="color:#ffd700;"></i> Đang phát nghe thử...`;
+      renderVoiceCards();
+
+      const previewUrl = `${API_BASE}/api/voices/preview/${voiceId}?t=${Date.now()}`;
+      safePlay(previewPlayer, previewUrl, (err) => {
+        alert("⚠️ Không thể phát nghe thử! Đảm bảo server backend đang chạy.");
+        currentPlayingVoiceId = null;
+        liveIndicator.innerHTML = `<i class="fa-solid fa-circle-dot"></i> Đã sẵn sàng`;
+        renderVoiceCards();
+      });
+    }
+
+    previewPlayer.onended = () => {
+      currentPlayingVoiceId = null;
+      document.getElementById("live-indicator").innerHTML = `<i class="fa-solid fa-circle-dot"></i> Đã sẵn sàng`;
+      renderVoiceCards();
+    };
+
+    renderVoiceCards();
+
+    function readTitleWithVoice() {
+      if (!lastParsedTitle) return;
+      document.getElementById("tts-text").value = lastParsedTitle;
+      switchTab('voice');
+      generateVoiceStream();
+    }
+
+    function generateVoiceStream() {
+      if (!previewPlayer.paused) previewPlayer.pause();
+      currentPlayingVoiceId = null;
+      renderVoiceCards();
+
+      let text = document.getElementById("tts-text").value.trim();
+      if (!text) {
+        text = "Xin chào các bạn. Đây là hệ thống tạo âm thanh chuẩn phòng thu DUY88DW Media Suite.";
+        document.getElementById("tts-text").value = text;
+      }
+
+      const mainPlayer = document.getElementById("main-audio-player");
+      mainPlayer.style.display = "block";
+
+      const progressBox = document.getElementById('progress-box');
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+      
+      progressBox.style.display = 'block';
+      progressFill.style.background = 'linear-gradient(90deg, var(--primary), var(--secondary))';
+      progressFill.style.width = '20%';
+      progressText.innerText = 'Đang khởi tạo cấu hình giọng đọc (Speed & Pitch)... 20%';
+
+      let voiceCur = 20;
+      const voiceProgressInt = setInterval(() => {
+        if (voiceCur < 90) {
+          voiceCur += Math.max(1, Math.round((90 - voiceCur) * 0.2));
+          progressFill.style.width = voiceCur + '%';
+          progressText.innerText = `Đang tổng hợp luồng âm thanh Studio HD... ${voiceCur}%`;
+        }
+      }, 200);
+
+      const streamUrl = `${API_BASE}/api/tts/stream?text=${encodeURIComponent(text)}&voice_id=${encodeURIComponent(selectedVoice)}&speed=${selectedSpeed}&pitch=${selectedPitch}&t=${Date.now()}`;
+      
+      safePlay(mainPlayer, streamUrl, (err) => {
+        clearInterval(voiceProgressInt);
+        progressFill.style.width = '100%';
+        progressFill.style.background = '#ff4d4d';
+        progressText.innerText = '❌ Lỗi phát âm thanh!';
+        alert("⚠️ Lỗi phát âm thanh: " + err.message);
+      });
+
+      mainPlayer.onplaying = () => {
+        clearInterval(voiceProgressInt);
+        progressFill.style.width = '100%';
+        progressFill.style.background = 'linear-gradient(90deg, #00ff87, #00f0ff)';
+        progressText.innerText = '✅ Phát âm thanh Studio HD thành công! 100%';
+        setTimeout(() => { progressBox.style.display = 'none'; }, 2500);
+      };
+
+      const liveIndicator = document.getElementById("live-indicator");
+      liveIndicator.innerHTML = `<i class="fa-solid fa-waveform-lines" style="color:#ff007f;"></i> Đang đọc văn bản HD...`;
+    }
+
+    function downloadVoiceAudio() {
+      const textarea = document.getElementById('tts-text');
+      const text = textarea ? textarea.value.trim() : "";
+      if (!text) {
+        alert("Vui lòng nhập văn bản bạn muốn tải file âm thanh MP3!");
+        return;
+      }
+
+      const selectedVoice = selectedVoiceId || "review_phim_nam";
+      const downloadUrl = `${API_BASE}/api/tts/stream?text=${encodeURIComponent(text)}&voice_id=${encodeURIComponent(selectedVoice)}&speed=${selectedSpeed}&pitch=${selectedPitch}&download=true&t=${Date.now()}`;
+      
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `DUY88DW_StudioVoice_${selectedVoice}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    /* ==========================================================
+       5. MASTER AUDIO STORY AI ENGINE
+       ========================================================== */
+    let selectedStoryGenre = "hoc_duong";
+
+    function selectStoryGenre(genreKey) {
+      selectedStoryGenre = genreKey;
+      const allGenres = [
+        'hoc_duong', 'tong_tai', 'ngon_tinh', 'drama', 'tra_thu',
+        'hao_mon', 'trong_sinh', 'nu_cuong', 'co_trang', 'xuyen_khong',
+        'linh_di', 'kinh_di', 'bi_an', 'dieu_tra', 'huyen_huan'
+      ];
+      allGenres.forEach(g => {
+        const btn = document.getElementById(`genre-btn-${g}`);
+        if (btn) {
+          if (g === genreKey) {
+            btn.classList.add('active');
+            btn.style.background = 'rgba(0, 255, 135, 0.15)';
+            btn.style.borderColor = '#00ff87';
+          } else {
+            btn.classList.remove('active');
+            btn.style.background = 'rgba(255, 255, 255, 0.05)';
+            btn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+          }
+        }
+      });
+    }
+
+    function toggleAiApiKeyInput(engine) {
+      const box = document.getElementById("ai-key-box");
+      const input = document.getElementById("story-ai-key-input");
+      if (engine === "builtin") {
+        box.style.display = "none";
+      } else {
+        box.style.display = "block";
+        const savedKey = localStorage.getItem(`apikey_${engine}`) || "";
+        input.value = savedKey;
+      }
+    }
+
+    function saveApiKeyLocal(val) {
+      const engine = document.getElementById("story-ai-engine-select").value;
+      if (engine && engine !== "builtin") {
+        localStorage.setItem(`apikey_${engine}`, val.trim());
+      }
+    }
+
+    function updateStoryCharsSlider(val) {
+      const num = parseInt(val) || 3000;
+      document.getElementById("story-target-chars-label").innerText = num.toLocaleString("en-US");
+    }
+
+    function setStoryCharsPreset(val) {
+      const slider = document.getElementById("story-chars-slider");
+      if (slider) {
+        slider.value = val;
+        updateStoryCharsSlider(val);
+      }
+    }
+
+    function updateStoryOutCounts() {
+      const text = document.getElementById("story-result-text").value;
+      const chars = text.length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      document.getElementById("story-out-char-count").innerText = chars.toLocaleString("en-US");
+      document.getElementById("story-out-word-count").innerText = words.toLocaleString("en-US");
+    }
+
+    async function generateMasterAIStory() {
+      const toneSelect = document.getElementById("story-tone-select");
+      const endingSelect = document.getElementById("story-ending-select");
+      const engineSelect = document.getElementById("story-ai-engine-select");
+      const keyInput = document.getElementById("story-ai-key-input");
+
+      const sliderVal = parseInt(document.getElementById("story-chars-slider").value) || 3000;
+      const customPrompt = document.getElementById("story-custom-prompt").value.trim();
+
+      const toneVal = toneSelect ? toneSelect.value : "cang_thang";
+      const endingVal = endingSelect ? endingSelect.value : "HE";
+      const aiEngineVal = engineSelect ? engineSelect.value : "builtin";
+      const apiKeyVal = keyInput ? keyInput.value.trim() : "";
+
+      const btnRun = document.getElementById("btn-run-story");
+      const progressBox = document.getElementById("story-progress-box");
+      const progressFill = document.getElementById("story-progress-fill");
+      const progressText = document.getElementById("story-progress-text");
+
+      btnRun.disabled = true;
+      progressBox.style.display = "block";
+      progressFill.style.background = "linear-gradient(90deg, #00ff87, #00f0ff)";
+      progressFill.style.width = "15%";
+      const engineLabel = aiEngineVal === "builtin" ? "AI Nội Bộ" : aiEngineVal.toUpperCase();
+      progressText.innerText = `Đang kết nối Động cơ ${engineLabel}... 15%`;
+
+      let cur = 15;
+      const storyInt = setInterval(() => {
+        if (cur < 92) {
+          cur += Math.max(1, Math.round((92 - cur) * 0.12));
+          progressFill.style.width = cur + "%";
+          progressText.innerText = `Đang sáng tác kịch bản bằng ${engineLabel} (${cur}%)...`;
+        }
+      }, 300);
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/story/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            genre: selectedStoryGenre,
+            tone: toneVal,
+            ending: endingVal,
+            target_chars: sliderVal,
+            custom_prompt: customPrompt,
+            ai_engine: aiEngineVal,
+            api_key: apiKeyVal
+          })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok || data.status !== 'success') {
+          throw new Error(data.detail || data.message || "Không thể tạo kịch bản truyện audio");
+        }
+
+        clearInterval(storyInt);
+        progressFill.style.width = "100%";
+        progressFill.style.background = "linear-gradient(90deg, #00ff87, #00f0ff)";
+        progressText.innerText = `✅ ${data.message}`;
+
+        const txtArea = document.getElementById("story-result-text");
+        txtArea.value = data.story_text;
+        updateStoryOutCounts();
+
+      } catch (err) {
+        clearInterval(storyInt);
+        progressFill.style.width = "100%";
+        progressFill.style.background = "#ff4d4d";
+        progressText.innerText = "❌ Lỗi sáng tác truyện AI!";
+        alert("❌ Lỗi Story AI: " + err.message);
+      } finally {
+        btnRun.disabled = false;
+      }
+    }
+
+    async function copyStoryScript() {
+      const text = document.getElementById("story-result-text").value.trim();
+      if (!text) {
+        alert("Chưa có văn bản truyện để sao chép!");
+        return;
+      }
+
+      const btnCopy = document.getElementById("btn-copy-story");
+      const origHtml = btnCopy ? btnCopy.innerHTML : "";
+
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (err) {
+        const txtArea = document.getElementById("story-result-text");
+        txtArea.select();
+        document.execCommand("copy");
+      }
+
+      if (btnCopy) {
+        btnCopy.innerHTML = `<i class="fa-solid fa-check"></i> Đã Sao Chép Văn Bản!`;
+        btnCopy.style.background = "linear-gradient(135deg, #00ff87, #00f0ff)";
+        setTimeout(() => {
+          btnCopy.innerHTML = origHtml;
+          btnCopy.style.background = "linear-gradient(135deg, #ffd700, #ff8c00)";
+        }, 2500);
+      }
+      alert("📋 Đã sao chép toàn bộ văn bản truyện vào bộ nhớ tạm (Clipboard) thành công!");
+    }
+
+    function sendStoryToStudioTTS() {
+      const text = document.getElementById("story-result-text").value.trim();
+      if (!text) {
+        alert("Vui lòng sáng tác kịch bản truyện trước khi chuyển!");
+        return;
+      }
+      const ttsInput = document.getElementById("tts-text");
+      if (ttsInput) {
+        ttsInput.value = text;
+        updateCharCount();
+      }
+      switchTab('voice');
+      alert("🎧 Đã chuyển kịch bản truyện sang Tab Studio Voice AI!");
+    }
+
+    function sendStoryToF5TTS() {
+      const text = document.getElementById("story-result-text").value.trim();
+      if (!text) {
+        alert("Vui lòng sáng tác kịch bản truyện trước khi chuyển!");
+        return;
+      }
+      const f5Input = document.getElementById("f5-gen-text");
+      if (f5Input) {
+        f5Input.value = text;
+        const countEl = document.getElementById("f5-char-count");
+        if (countEl) countEl.innerText = text.length.toLocaleString("en-US");
+      }
+      switchTab('f5tts');
+      alert("🎙️ Đã chuyển kịch bản truyện sang Tab F5-TTS Nhái Giọng AI!");
+    }
+
+    /* ==========================================================
+       6. F5-TTS ZERO-SHOT VOICE CLONING AI
+       ========================================================== */
+    function updateF5CharCount() {
+      const text = document.getElementById("f5-gen-text").value || "";
+      document.getElementById("f5-char-count").innerText = text.length.toLocaleString();
+    }
+
+    function useDefaultSample() {
+      document.getElementById("f5-ref-audio").value = "mau_giong_chuyen_nghiep.mp3";
+      document.getElementById("f5-upload-status").innerHTML = `<i class="fa-solid fa-circle-check" style="color:#00ff87;"></i> Mẫu mặc định: mau_giong_chuyen_nghiep.mp3`;
+      autoTranscribeSample();
+    }
+
+    async function autoTranscribeSample() {
+      const refAudio = document.getElementById("f5-ref-audio").value.trim();
+      const refTextInput = document.getElementById("f5-ref-text");
+      if (!refAudio) {
+        alert("Vui lòng tải lên hoặc chọn tệp mẫu âm thanh trước!");
+        return;
+      }
+
+      refTextInput.placeholder = "⚡ Đang trích xuất lời văn bằng Whisper AI...";
+      try {
+        const resp = await fetch(`${API_BASE}/api/f5tts/transcribe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ref_audio: refAudio })
+        });
+        const data = await resp.json();
+        if (!resp.ok || data.status !== 'success') {
+          throw new Error(data.detail || "Không thể trích xuất lời văn mẫu");
+        }
+
+        refTextInput.value = data.transcription || "";
+        refTextInput.placeholder = "Bấm 'Tự Động Trích Xuất Lời Văn AI' hoặc tự nhập lời văn mẫu...";
+      } catch (err) {
+        console.warn("Auto transcribe warning:", err);
+        refTextInput.placeholder = "Tùy chọn: Nhập văn bản lời đọc của âm thanh mẫu...";
+      }
+    }
+
+    async function handleF5AudioUpload(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      const statusEl = document.getElementById("f5-upload-status");
+      statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tải lên ${file.name}...`;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/f5tts/upload`, {
+          method: "POST",
+          body: formData
+        });
+        const data = await resp.json();
+        if (!resp.ok || data.status !== "success") {
+          throw new Error(data.detail || "Không thể tải lên tệp mẫu âm thanh");
+        }
+
+        document.getElementById("f5-ref-audio").value = data.file_path;
+        statusEl.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#00ff87;"></i> ${file.name}`;
+        
+        // Auto transcribe newly uploaded audio sample!
+        autoTranscribeSample();
+      } catch (err) {
+        statusEl.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color:#ff4d4d;"></i> Lỗi: ${err.message}`;
+        alert("❌ Lỗi tải tệp âm thanh: " + err.message);
+      }
+    }
+
+    async function checkF5TTSHardware() {
+      const statusEl = document.getElementById("f5-hardware-status");
+      try {
+        const resp = await fetch(`${API_BASE}/api/f5tts/status`);
+        const data = await resp.json();
+        if (data.has_gpu) {
+          statusEl.innerHTML = `<i class="fa-solid fa-bolt" style="color:#00ff87;"></i> GPU CUDA: ${data.device}`;
+        } else {
+          statusEl.innerHTML = `<i class="fa-solid fa-microchip" style="color:#ffd700;"></i> Chế độ CPU Mode`;
+        }
+      } catch (err) {
+        statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:#ff4d4d;"></i> Không thể kiểm tra F5-TTS Engine`;
+      }
+    }
+
+    let lastF5AudioUrl = "";
+
+    async function runF5TTSClone() {
+      const refAudio = document.getElementById("f5-ref-audio").value.trim();
+      const refText = document.getElementById("f5-ref-text").value.trim();
+      const genText = document.getElementById("f5-gen-text").value.trim();
+
+      if (!genText) {
+        alert("Vui lòng nhập văn bản mục tiêu cần nhái giọng!");
+        return;
+      }
+
+      const btnRun = document.getElementById("btn-run-f5tts");
+      const btnDl = document.getElementById("btn-download-f5");
+      const f5ProgressBox = document.getElementById("f5-progress-box");
+      const f5ProgressFill = document.getElementById("f5-progress-fill");
+      const f5ProgressText = document.getElementById("f5-progress-text");
+
+      btnRun.disabled = true;
+      f5ProgressBox.style.display = "block";
+      f5ProgressFill.style.background = "linear-gradient(90deg, #00f0ff, #7000ff)";
+      f5ProgressFill.style.width = "15%";
+      f5ProgressText.innerText = "Khởi chạy F5-TTS Flow Matching Model... 15%";
+
+      let cur = 15;
+      const f5Int = setInterval(() => {
+        if (cur < 92) {
+          cur += Math.max(1, Math.round((92 - cur) * 0.12));
+          f5ProgressFill.style.width = cur + "%";
+          f5ProgressText.innerText = `Đang tổng hợp giọng đọc Zero-Shot AI... ${cur}%`;
+        }
+      }, 300);
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/f5tts/clone`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ref_audio: refAudio,
+            ref_text: refText,
+            gen_text: genText
+          })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok || data.status !== 'success') {
+          throw new Error(data.detail || "Không thể tạo âm thanh nhái giọng");
+        }
+
+        clearInterval(f5Int);
+        f5ProgressFill.style.width = "100%";
+        f5ProgressFill.style.background = "linear-gradient(90deg, #00ff87, #00f0ff)";
+        f5ProgressText.innerText = "✅ Nhái Giọng F5-TTS AI Thành Công! 100%";
+
+        const fullAudio = getFullUrl(data.audio_url);
+        lastF5AudioUrl = fullAudio;
+
+        const player = document.getElementById("f5-result-player");
+        player.style.display = "block";
+        player.src = fullAudio;
+        player.load();
+        player.play().catch(e => console.log("Auto-play error:", e));
+
+        const btnMp3 = document.getElementById("btn-download-f5-mp3");
+        const btnWav = document.getElementById("btn-download-f5-wav");
+        if (btnMp3) btnMp3.style.display = "inline-flex";
+        if (btnWav) btnWav.style.display = "inline-flex";
+      } catch (err) {
+        clearInterval(f5Int);
+        f5ProgressFill.style.width = "100%";
+        f5ProgressFill.style.background = "#ff4d4d";
+        f5ProgressText.innerText = "❌ Lỗi nhái giọng F5-TTS!";
+        alert("❌ Lỗi F5-TTS AI: " + err.message);
+      } finally {
+        btnRun.disabled = false;
+      }
+    }
+
+    async function downloadF5Audio(fmt = 'mp3') {
+      if (!lastF5AudioUrl) {
+        alert("Chưa có file âm thanh nhái giọng để tải!");
+        return;
+      }
+      
+      const targetExt = fmt === 'mp3' ? '.mp3' : '.wav';
+      const targetFilename = `DUY88DW_F5TTS_ClonedVoice${targetExt}`;
+      
+      let exportUrl = lastF5AudioUrl;
+      if (exportUrl.includes("&filename=")) {
+        exportUrl = exportUrl.replace(/&filename=[^&]+/, `&filename=${targetFilename}`);
+      } else {
+        exportUrl += `&filename=${targetFilename}`;
+      }
+
+      const btnId = fmt === 'mp3' ? 'btn-download-f5-mp3' : 'btn-download-f5-wav';
+      const btn = document.getElementById(btnId);
+      const origHtml = btn ? btn.innerHTML : "";
+      if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tải...`;
+
+      try {
+        const resp = await fetch(exportUrl);
+        if (!resp.ok) throw new Error("Không thể xuất file âm thanh");
+        const blob = await resp.blob();
+        
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = targetFilename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+      } catch (err) {
+        window.open(exportUrl, '_blank');
+      } finally {
+        if (btn) btn.innerHTML = origHtml;
+      }
+    }
+
+    function triggerPWAInstall() { alert('Vui lòng dùng tính năng "Add to Home Screen" trên trình duyệt để cài đặt DUY88DW App!'); }
+
+  </script>
+</body>
+</html>
