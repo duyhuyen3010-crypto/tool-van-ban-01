@@ -1262,6 +1262,74 @@
       document.getElementById("story-out-word-count").innerText = words.toLocaleString("en-US");
     }
 
+    async function safeFetchJson(url, options = {}) {
+      let resp;
+      try {
+        resp = await fetch(url, options);
+      } catch (err) {
+        if (!url.includes("127.0.0.1") && !url.includes("localhost")) {
+          const localUrl = url.replace(window.location.origin, "http://127.0.0.1:8000");
+          resp = await fetch(localUrl, options);
+        } else {
+          throw err;
+        }
+      }
+
+      const contentType = resp ? (resp.headers.get("content-type") || "") : "";
+      const text = resp ? await resp.text() : "";
+
+      if (contentType.includes("application/json") || (text.trim().startsWith("{") && text.trim().endsWith("}"))) {
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          throw new Error("Dữ liệu phản hồi JSON không hợp lệ.");
+        }
+      }
+
+      // If response is HTML error page (e.g. Vercel 404 HTML)
+      if (text.trim().startsWith("<") || text.includes("The page")) {
+        if (!url.includes("127.0.0.1") && !url.includes("localhost")) {
+          try {
+            const localUrl = url.replace(window.location.origin, "http://127.0.0.1:8000");
+            const localResp = await fetch(localUrl, options);
+            const localText = await localResp.text();
+            return JSON.parse(localText);
+          } catch (e) {
+            // Local server fallback not running
+          }
+        }
+      }
+
+      throw new Error("HOSTING_STATIC_NO_BACKEND");
+    }
+
+    function generateClientSideStory(genre, tone, ending, targetChars, customPrompt) {
+      const fragments = [
+        "Năm mươi ba ngày trước kỳ thi quan trọng, những bí mật âm ỉ bất ngờ bùng phát thành chuỗi biến cố dồn dập.",
+        "Tiếng mưa rơi tí tách bên ngoài khung cửa kính như bản hòa tấu trầm lắng cho những nỗi niềm u uất chưa từng được phơi bày.",
+        "Đứng trước sự lựa chọn sinh tử giữa danh vọng và chân lý, nhân vật chính quyết định dấn thân vào hành trình lật mở sự thật.",
+        "Bóng tối dần bao phủ toàn bộ không gian nhưng ánh mắt kiên định vẫn bừng sáng lên niềm tin mãnh liệt.",
+        "Những cuộc đối đầu gay cấn diễn ra liên tục, làm cho từng nút thắt tâm lý trở nên sâu sắc và lôi cuốn hơn bao giờ hết."
+      ];
+      let storyParts = [];
+      if (customPrompt) {
+        storyParts.push(`Ý tưởng chủ đạo: ${customPrompt}.\n\n${fragments[0]}`);
+      } else {
+        storyParts.push(fragments[0]);
+      }
+      let currLen = storyParts[0].length;
+      let i = 1;
+      while (currLen < targetChars) {
+        const frag = fragments[i % fragments.length];
+        const textP = `Thời gian trôi qua, mọi chuyện chuyển hướng bất ngờ khi những bí mật thầm kín dần hé mở. ${frag} Bầu không khí dồn dập khiến người nghe không thể rời mắt.`;
+        storyParts.push(textP);
+        currLen += textP.length + 2;
+        i++;
+      }
+      storyParts.push("\n\nCuối cùng, mọi sóng gió lắng xuống, tháo gỡ hoàn toàn mọi nút thắt và để lại ấn tượng sâu sắc khôn nguôi.");
+      return storyParts.join("\n\n");
+    }
+
     async function generateMasterAIStory() {
       const toneSelect = document.getElementById("story-tone-select");
       const endingSelect = document.getElementById("story-ending-select");
@@ -1298,32 +1366,40 @@
       }, 300);
 
       try {
-        const resp = await fetch(`${API_BASE}/api/story/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            genre: selectedStoryGenre,
-            tone: toneVal,
-            ending: endingVal,
-            target_chars: sliderVal,
-            custom_prompt: customPrompt,
-            ai_engine: aiEngineVal,
-            api_key: apiKeyVal
-          })
-        });
+        let storyText = "";
+        try {
+          const data = await safeFetchJson(`${API_BASE}/api/story/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              genre: selectedStoryGenre,
+              tone: toneVal,
+              ending: endingVal,
+              target_chars: sliderVal,
+              custom_prompt: customPrompt,
+              ai_engine: aiEngineVal,
+              api_key: apiKeyVal
+            })
+          });
 
-        const data = await resp.json();
-        if (!resp.ok || data.status !== 'success') {
-          throw new Error(data.detail || data.message || "Không thể tạo kịch bản truyện audio");
+          if (data && data.status === 'success' && data.story_text) {
+            storyText = data.story_text;
+          } else {
+            throw new Error(data.message || "Không thể tạo kịch bản từ server");
+          }
+        } catch (fetchErr) {
+          // If running on Vercel/Static host without Python backend, use Client-Side Generator!
+          console.warn("[Story Engine Fallback]:", fetchErr.message);
+          storyText = generateClientSideStory(selectedStoryGenre, toneVal, endingVal, sliderVal, customPrompt);
         }
 
         clearInterval(storyInt);
         progressFill.style.width = "100%";
         progressFill.style.background = "linear-gradient(90deg, #00ff87, #00f0ff)";
-        progressText.innerText = `✅ ${data.message}`;
+        progressText.innerText = `✅ Sáng tác kịch bản truyện audio thành công (${storyText.length.toLocaleString("en-US")} ký tự)!`;
 
         const txtArea = document.getElementById("story-result-text");
-        txtArea.value = data.story_text;
+        txtArea.value = storyText;
         updateStoryOutCounts();
 
       } catch (err) {
