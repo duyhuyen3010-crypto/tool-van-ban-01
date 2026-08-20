@@ -943,7 +943,13 @@
       resDiv.style.background = "rgba(255, 77, 77, 0.15)";
       resDiv.style.border = "1px solid #ff4d4d";
       resDiv.style.color = "#ff4d4d";
-      resDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Không thể kết nối tới ${url}. Vui lòng đảm bảo file <code>python server.py</code> đang chạy! Cấu hình đã được lưu tạm.`;
+      
+      let extraNotice = "";
+      if (window.location.protocol === 'https:' && url.startsWith('http://')) {
+        extraNotice = `<br><br>🔒 <strong>Cảnh báo Mixed Content:</strong> Trang Vercel đang chạy trên HTTPS nhưng URL Server là HTTP (<code>${url}</code>). Trình duyệt mặc định sẽ CHẶN kết nối này.<br>👉 <em>Giải pháp:</em> Dùng Ngrok/LocalTunnel tạo URL HTTPS (ví dụ <code>npx localtunnel --port 8000</code>) dán vào đây, hoặc cho phép "Insecure Content" trong cài đặt trình duyệt (🔒 icon).`;
+      }
+      
+      resDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Không thể kết nối tới ${url}. Vui lòng đảm bảo file <code>python server.py</code> đang chạy!${extraNotice}`;
     }
 
     function switchTab(tabName) {
@@ -1233,7 +1239,11 @@
 
       const previewUrl = `${API_BASE}/api/voices/preview/${voiceId}?t=${Date.now()}`;
       safePlay(previewPlayer, previewUrl, (err) => {
-        alert(`⚠️ Không thể phát nghe thử!\n\n- Đảm bảo server backend (python server.py) đang chạy.\n- URL Server Backend hiện tại: ${API_BASE}\n\n👉 Bạn có thể đổi địa chỉ Server bằng nút "Backend Config" trên thanh Header góc trên màn hình!`);
+        let extraInfo = "";
+        if (window.location.protocol === 'https:' && API_BASE.startsWith('http://')) {
+          extraInfo = "\n\n⚠️ NGUYÊN NHÂN CHÍNH: Trình duyệt chặn kết nối (Mixed Content: Trang Vercel là HTTPS, Backend là HTTP http://127.0.0.1:8000).\n\n👉 GIẢI PHÁP:\n1. Bật HTTPS Tunnel bằng cách chạy lệnh trong cmd/terminal:\n   npx localtunnel --port 8000\n   sau đó dán link HTTPS (https://xxx.loca.lt) vào nút Backend Config trên Header.\n2. Hoặc Mở trực tiếp file index.html từ máy tính của bạn.\n3. Hoặc bấm icon 🔒 góc thanh địa chỉ Vercel -> Site Settings -> Insecure content -> chọn Allow.";
+        }
+        alert(`⚠️ Không thể phát nghe thử!\n\n- Đảm bảo server backend (python server.py) đang chạy.\n- URL Server Backend hiện tại: ${API_BASE}${extraInfo}`);
         currentPlayingVoiceId = null;
         liveIndicator.innerHTML = `<i class="fa-solid fa-circle-dot"></i> Đã sẵn sàng`;
         renderVoiceCards();
@@ -1833,9 +1843,16 @@
         <input type="text" id="input-backend-url" placeholder="VD: http://127.0.0.1:8000 hoặc https://xxx.ngrok-free.app" style="width:100%; padding:10px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); border-radius:10px; color:#fff; font-size:0.88rem; outline:none;">
       </div>
 
-      <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
         <button onclick="presetBackendUrl('http://127.0.0.1:8000')" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:4px 10px; border-radius:8px; font-size:0.75rem; cursor:pointer;">Default Local (127.0.0.1:8000)</button>
         <button onclick="presetBackendUrl('http://localhost:8000')" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:4px 10px; border-radius:8px; font-size:0.75rem; cursor:pointer;">Localhost (8000)</button>
+      </div>
+
+      <div style="background:rgba(0,240,255,0.08); border:1px solid rgba(0,240,255,0.2); border-radius:10px; padding:10px; margin-bottom:14px; font-size:0.78rem; line-height:1.4; color:#e2e8f0;">
+        <div style="color:var(--gold); font-weight:700; margin-bottom:4px;"><i class="fa-solid fa-shield-halved"></i> Lưu ý khi dùng trên Vercel (HTTPS):</div>
+        Nếu trình duyệt chặn HTTP <code>127.0.0.1:8000</code> (Mixed Content), hãy mở terminal máy bạn chạy lệnh tạo HTTPS Tunnel:
+        <code style="background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:4px; color:#00ff87; display:block; margin:4px 0; user-select:all;">npx localtunnel --port 8000</code>
+        Sau đó dán URL dạng <code>https://xxx.loca.lt</code> nhận được vào ô phía trên!
       </div>
 
       <div id="backend-test-result" style="font-size:0.8rem; margin-bottom:16px; padding:10px; border-radius:8px; display:none; line-height:1.4;"></div>
