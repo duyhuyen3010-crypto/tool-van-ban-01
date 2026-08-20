@@ -363,6 +363,18 @@
         font-size: 0.85rem;
       }
     }
+
+    /* MODAL POPUP BACKEND CONFIG */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(4, 6, 12, 0.82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      z-index: 9999; display: none; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-content {
+      background: rgba(15, 18, 30, 0.95); border: 1px solid var(--glass-border);
+      border-radius: 24px; padding: 24px; max-width: 540px; width: 100%;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9); position: relative;
+    }
   </style>
 </head>
 <body>
@@ -1327,12 +1339,12 @@
         return;
       }
 
-      const selectedVoice = selectedVoiceId || "review_phim_nam";
-      const downloadUrl = `${API_BASE}/api/tts/stream?text=${encodeURIComponent(text)}&voice_id=${encodeURIComponent(selectedVoice)}&speed=${selectedSpeed}&pitch=${selectedPitch}&download=true&t=${Date.now()}`;
+      const voiceIdToUse = selectedVoice || "review_phim_nam";
+      const downloadUrl = `${API_BASE}/api/tts/stream?text=${encodeURIComponent(text)}&voice_id=${encodeURIComponent(voiceIdToUse)}&speed=${selectedSpeed}&pitch=${selectedPitch}&download=true&t=${Date.now()}`;
       
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `DUY88DW_StudioVoice_${selectedVoice}.mp3`;
+      link.download = `DUY88DW_StudioVoice_${voiceIdToUse}.mp3`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1717,7 +1729,8 @@
       }
 
       const btnRun = document.getElementById("btn-run-f5tts");
-      const btnDl = document.getElementById("btn-download-f5");
+      const btnMp3 = document.getElementById("btn-download-f5-mp3");
+      const btnWav = document.getElementById("btn-download-f5-wav");
       const f5ProgressBox = document.getElementById("f5-progress-box");
       const f5ProgressFill = document.getElementById("f5-progress-fill");
       const f5ProgressText = document.getElementById("f5-progress-text");
