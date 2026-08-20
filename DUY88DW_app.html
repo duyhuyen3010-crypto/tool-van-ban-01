@@ -382,6 +382,9 @@
       </a>
 
       <div class="header-actions">
+        <button class="btn-header" id="btn-backend-config" onclick="openBackendModal()" style="border: 1px solid rgba(0, 240, 255, 0.4); background: rgba(0, 240, 255, 0.1);">
+          <span id="backend-status-badge"><i class="fa-solid fa-server"></i> Backend</span>
+        </button>
         <button class="btn-header" id="btn-gravity" onclick="toggleGravity()">
           <i class="fa-solid fa-atom"></i> <span id="gravity-label">Zero-G Mode</span>
         </button>
@@ -822,7 +825,126 @@
     /* ==========================================================
        2. TAB SWITCHER & API CONFIG
        ========================================================== */
-    const API_BASE = window.location.origin.includes("http") ? window.location.origin : "http://127.0.0.1:8000";
+    function getDefaultApiBase() {
+      const saved = localStorage.getItem("CUSTOM_BACKEND_URL");
+      if (saved && saved.trim()) {
+        let url = saved.trim();
+        if (url.endsWith('/')) url = url.slice(0, -1);
+        return url;
+      }
+      const host = window.location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return window.location.origin;
+      }
+      return "http://127.0.0.1:8000";
+    }
+
+    let API_BASE = getDefaultApiBase();
+
+    function updateBackendBadge(online, url) {
+      const badge = document.getElementById("backend-status-badge");
+      if (!badge) return;
+      const displayUrl = (url || API_BASE).replace(/^https?:\/\//, '');
+      if (online) {
+        badge.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#00ff87;"></i> Backend: Online (${displayUrl})`;
+        badge.style.color = "#00ff87";
+      } else {
+        badge.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color:#ff4d4d;"></i> Backend: Offline (${displayUrl})`;
+        badge.style.color = "#ff4d4d";
+      }
+    }
+
+    async function checkBackendStatus() {
+      const badge = document.getElementById("backend-status-badge");
+      if (badge) {
+        badge.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Checking...`;
+      }
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 3500);
+        const resp = await fetch(`${API_BASE}/api/voices`, { signal: controller.signal });
+        clearTimeout(tid);
+        if (resp.ok) {
+          updateBackendBadge(true, API_BASE);
+          return true;
+        }
+      } catch (e) {
+        console.warn("Backend check failed:", e);
+      }
+      updateBackendBadge(false, API_BASE);
+      return false;
+    }
+
+    function openBackendModal() {
+      const modal = document.getElementById("backend-modal");
+      const input = document.getElementById("input-backend-url");
+      const resDiv = document.getElementById("backend-test-result");
+      if (input) input.value = API_BASE;
+      if (resDiv) { resDiv.style.display = "none"; resDiv.innerHTML = ""; }
+      if (modal) modal.style.display = "flex";
+    }
+
+    function closeBackendModal() {
+      const modal = document.getElementById("backend-modal");
+      if (modal) modal.style.display = "none";
+    }
+
+    function presetBackendUrl(url) {
+      const input = document.getElementById("input-backend-url");
+      if (input) input.value = url;
+    }
+
+    async function testAndSaveBackendUrl() {
+      const input = document.getElementById("input-backend-url");
+      const resDiv = document.getElementById("backend-test-result");
+      if (!input || !resDiv) return;
+
+      let url = input.value.trim();
+      if (!url) {
+        url = "http://127.0.0.1:8000";
+      }
+      if (url.endsWith('/')) url = url.slice(0, -1);
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = "http://" + url;
+      }
+
+      resDiv.style.display = "block";
+      resDiv.style.background = "rgba(255, 215, 0, 0.15)";
+      resDiv.style.border = "1px solid #ffd700";
+      resDiv.style.color = "#ffd700";
+      resDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang thử kết nối tới ${url}...`;
+
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 4000);
+        const resp = await fetch(`${url}/api/voices`, { signal: controller.signal });
+        clearTimeout(tid);
+        if (resp.ok) {
+          localStorage.setItem("CUSTOM_BACKEND_URL", url);
+          API_BASE = url;
+          updateBackendBadge(true, API_BASE);
+          resDiv.style.background = "rgba(0, 255, 135, 0.15)";
+          resDiv.style.border = "1px solid #00ff87";
+          resDiv.style.color = "#00ff87";
+          resDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Kết nối thành công! Đã lưu cấu hình server.`;
+          setTimeout(() => {
+            closeBackendModal();
+            if (typeof loadPresetVoices === "function") loadPresetVoices();
+          }, 1200);
+          return;
+        }
+      } catch (err) {
+        console.warn("Test backend failed:", err);
+      }
+
+      localStorage.setItem("CUSTOM_BACKEND_URL", url);
+      API_BASE = url;
+      updateBackendBadge(false, API_BASE);
+      resDiv.style.background = "rgba(255, 77, 77, 0.15)";
+      resDiv.style.border = "1px solid #ff4d4d";
+      resDiv.style.color = "#ff4d4d";
+      resDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Không thể kết nối tới ${url}. Vui lòng đảm bảo file <code>python server.py</code> đang chạy! Cấu hình đã được lưu tạm.`;
+    }
 
     function switchTab(tabName) {
       document.getElementById('tab-downloader').style.display = tabName === 'downloader' ? 'block' : 'none';
@@ -935,7 +1057,7 @@
         dlProgressText.innerText = '❌ Phân tích thất bại!';
         
         if (err.name === 'TypeError' && (err.message.includes('fetch') || err.message.includes('Failed'))) {
-          alert('❌ Không thể kết nối Server backend!\nVui lòng kiểm tra đảm bảo file server.py đang chạy tại: ' + API_BASE);
+          alert('❌ Không thể kết nối Server backend!\n\n- Đảm bảo file server.py đang chạy tại: ' + API_BASE + '\n- Bạn có thể đổi URL server bằng nút "Backend Config" trên Header.');
         } else {
           alert('❌ Lỗi phân tích video: ' + err.message);
         }
@@ -1019,12 +1141,21 @@
     }
 
     /* ==========================================================
-       SAFE AUDIO PLAYBACK (Bắt lỗi Interrupted play request)
+       SAFE AUDIO PLAYBACK (Bắt lỗi Interrupted play request & Load error)
        ========================================================== */
     function safePlay(audioElement, newSrc, onError) {
       try {
         audioElement.pause();
         audioElement.currentTime = 0;
+        
+        audioElement.onerror = null;
+        if (onError) {
+          audioElement.onerror = (e) => {
+            audioElement.onerror = null;
+            onError(e);
+          };
+        }
+
         audioElement.src = newSrc;
         
         const playPromise = audioElement.play();
@@ -1082,7 +1213,10 @@
     }
 
     // Run on initial load
-    document.addEventListener('DOMContentLoaded', updateCharCount);
+    document.addEventListener('DOMContentLoaded', () => {
+      updateCharCount();
+      checkBackendStatus();
+    });
 
     function togglePreviewVoice(voiceId) {
       const liveIndicator = document.getElementById("live-indicator");
@@ -1099,7 +1233,7 @@
 
       const previewUrl = `${API_BASE}/api/voices/preview/${voiceId}?t=${Date.now()}`;
       safePlay(previewPlayer, previewUrl, (err) => {
-        alert("⚠️ Không thể phát nghe thử! Đảm bảo server backend đang chạy.");
+        alert(`⚠️ Không thể phát nghe thử!\n\n- Đảm bảo server backend (python server.py) đang chạy.\n- URL Server Backend hiện tại: ${API_BASE}\n\n👉 Bạn có thể đổi địa chỉ Server bằng nút "Backend Config" trên thanh Header góc trên màn hình!`);
         currentPlayingVoiceId = null;
         liveIndicator.innerHTML = `<i class="fa-solid fa-circle-dot"></i> Đã sẵn sàng`;
         renderVoiceCards();
@@ -1160,7 +1294,7 @@
         progressFill.style.width = '100%';
         progressFill.style.background = '#ff4d4d';
         progressText.innerText = '❌ Lỗi phát âm thanh!';
-        alert("⚠️ Lỗi phát âm thanh: " + err.message);
+        alert(`⚠️ Lỗi phát âm thanh!\n\n- Đảm bảo server.py đang chạy tại: ${API_BASE}\n- Bấm nút 'Backend Config' trên Header để kiểm tra địa chỉ Server!`);
       });
 
       mainPlayer.onplaying = () => {
@@ -1682,5 +1816,39 @@
     function triggerPWAInstall() { alert('Vui lòng dùng tính năng "Add to Home Screen" trên trình duyệt để cài đặt DUY88DW App!'); }
 
   </script>
+
+  <!-- BACKEND CONFIG MODAL -->
+  <div id="backend-modal" class="modal-overlay" onclick="if(event.target===this) closeBackendModal();">
+    <div class="modal-content interactive">
+      <button onclick="closeBackendModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#a0aec0; font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      <div style="font-size:1.15rem; font-weight:800; color:var(--secondary); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-server"></i> Cấu Hình Kết Nối Server Backend
+      </div>
+      <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:16px; line-height:1.5;">
+        Dịch vụ media suite & voice AI cần máy chủ Python <code>server.py</code> đang chạy để tạo âm thanh, nhái giọng và tải video.
+      </p>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.8rem; font-weight:700; color:var(--gold); display:block; margin-bottom:6px;">URL Server Backend (Python FastAPI):</label>
+        <input type="text" id="input-backend-url" placeholder="VD: http://127.0.0.1:8000 hoặc https://xxx.ngrok-free.app" style="width:100%; padding:10px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); border-radius:10px; color:#fff; font-size:0.88rem; outline:none;">
+      </div>
+
+      <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+        <button onclick="presetBackendUrl('http://127.0.0.1:8000')" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:4px 10px; border-radius:8px; font-size:0.75rem; cursor:pointer;">Default Local (127.0.0.1:8000)</button>
+        <button onclick="presetBackendUrl('http://localhost:8000')" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:4px 10px; border-radius:8px; font-size:0.75rem; cursor:pointer;">Localhost (8000)</button>
+      </div>
+
+      <div id="backend-test-result" style="font-size:0.8rem; margin-bottom:16px; padding:10px; border-radius:8px; display:none; line-height:1.4;"></div>
+
+      <div style="display:flex; gap:10px;">
+        <button onclick="testAndSaveBackendUrl()" style="flex:1; background:linear-gradient(135deg, var(--secondary), var(--primary)); color:#000; font-weight:800; border:none; padding:10px; border-radius:10px; cursor:pointer;">
+          <i class="fa-solid fa-circle-check"></i> Kiểm Tra & Lưu Cấu Hình
+        </button>
+        <button onclick="closeBackendModal()" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:10px 16px; border-radius:10px; cursor:pointer;">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
