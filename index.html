@@ -964,6 +964,30 @@
       resDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Không thể kết nối tới ${url}. Vui lòng đảm bảo file <code>python server.py</code> đang chạy!${extraNotice}`;
     }
 
+    function showToast(msg, duration = 3000) {
+      let toast = document.getElementById("app-toast");
+      if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "app-toast";
+        toast.style.cssText = `
+          position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+          background: rgba(15, 18, 30, 0.95); border: 1px solid var(--secondary);
+          color: #fff; padding: 12px 24px; border-radius: 30px; font-weight: 700;
+          font-size: 0.88rem; z-index: 99999; box-shadow: 0 10px 30px rgba(0,240,255,0.3);
+          backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+          transition: all 0.3s ease; opacity: 0; pointer-events: none;
+        `;
+        document.body.appendChild(toast);
+      }
+      toast.innerText = msg;
+      toast.style.opacity = "1";
+      toast.style.transform = "translateX(-50%) translateY(-5px)";
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(-50%) translateY(0)";
+      }, duration);
+    }
+
     function switchTab(tabName) {
       document.getElementById('tab-downloader').style.display = tabName === 'downloader' ? 'block' : 'none';
       document.getElementById('tab-voice').style.display = tabName === 'voice' ? 'block' : 'none';
@@ -974,6 +998,10 @@
       document.getElementById('tab-btn-voice').classList.toggle('active', tabName === 'voice');
       document.getElementById('tab-btn-story').classList.toggle('active', tabName === 'story');
       document.getElementById('tab-btn-f5tts').classList.toggle('active', tabName === 'f5tts');
+
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.scrollTop = 0;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (tabName === 'f5tts') {
         checkF5TTSHardware();
